@@ -12,6 +12,10 @@
 </head>
 <body>
   <div class="banner"></div>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle theme" aria-pressed="false">
+    <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zm10.48 0l1.79-1.79 1.79 1.79-1.79 1.79-1.79-1.79zM12 4V1h0a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0zm0 19a1 1 0 0 1-1-1v-2a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1zM4 13H2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zm18 0h-2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zM6.76 19.16l-1.8 1.79-1.79-1.79 1.79-1.79 1.8 1.79zm12.1 0l-1.79 1.79-1.79-1.79 1.79-1.79 1.79 1.79zM12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="currentColor" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
   <main class="card">
     <section class="profile">
       <img class="avatar" src="assets/profile.jpg" alt="Portrait of Anirudh Kosgi">
@@ -121,6 +125,29 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Theme setup
+      const themeToggle = document.getElementById('themeToggle');
+      const savedTheme = localStorage.getItem('theme');
+      const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      const initialTheme = savedTheme ? savedTheme : (prefersLight ? 'light' : 'dark');
+      if (initialTheme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        themeToggle?.setAttribute('aria-pressed', 'true');
+      }
+
+      themeToggle?.addEventListener('click', () => {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        if (isLight) {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'dark');
+          themeToggle.setAttribute('aria-pressed', 'false');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+          localStorage.setItem('theme', 'light');
+          themeToggle.setAttribute('aria-pressed', 'true');
+        }
+      });
+
       const contactBtn = document.getElementById('contactBtn');
       const modal = document.getElementById('contactModal');
       const closeBtn = modal.querySelector('[data-close]');

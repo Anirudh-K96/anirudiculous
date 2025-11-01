@@ -72,7 +72,7 @@ img, svg {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(3, 3, 12, 0.25) 0%, rgba(3, 3, 12, 0.9) 80%);
+    background: linear-gradient(180deg, var(--mask-start, rgba(3, 3, 12, 0.25)) 0%, var(--mask-end, rgba(3, 3, 12, 0.9)) 80%);
     z-index: 1;
 }
 
@@ -389,3 +389,65 @@ img, svg {
 }
 
 .copy-status { color: var(--text-muted); font-weight: 600; }
+
+/* Default gradient mask vars (dark theme) */
+:root {
+    --mask-start: rgba(3, 3, 12, 0.25);
+    --mask-end: rgba(3, 3, 12, 0.9);
+}
+
+/* Light theme overrides */
+:root[data-theme="light"] {
+    --bg-color: #f6f8ff;
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --accent: #6b5df0;
+    --accent-soft: rgba(107, 93, 240, 0.18);
+    --text-primary: #0b0c15;
+    --text-muted: #4a5175;
+    --border-color: rgba(11, 12, 21, 0.12);
+    --mask-start: rgba(255, 255, 255, 0.15);
+    --mask-end: rgba(255, 255, 255, 0.8);
+}
+
+:root[data-theme="light"] .banner { filter: brightness(0.8) saturate(1.1); }
+:root[data-theme="light"] .banner::before { opacity: 0.3; }
+
+:root[data-theme="light"] .card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(246,248,255,0.92) 100%);
+    border-color: var(--border-color);
+}
+
+:root[data-theme="light"] .section {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--border-color);
+}
+
+:root[data-theme="light"] .verified-list li {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    box-shadow: 0 10px 24px rgba(3,4,24,0.25);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+}
+
+.theme-toggle:hover, .theme-toggle:focus-visible { transform: translateY(-1px); }
+.theme-toggle svg { width: 20px; height: 20px; }
+.theme-toggle .icon-moon { display: none; }
+:root[data-theme="light"] .theme-toggle .icon-sun { display: none; }
+:root[data-theme="light"] .theme-toggle .icon-moon { display: inline; }
