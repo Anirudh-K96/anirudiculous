@@ -136,6 +136,8 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Global motion preference
+      const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       // Theme setup
       const themeToggle = document.getElementById('themeToggle');
       const savedTheme = localStorage.getItem('theme');
@@ -161,7 +163,7 @@
         }
       });
 
-      // Constellation overlay toggle + drawing
+      // Constellation overlay toggle + drawing (animated)
       const constellationBtn = document.getElementById('constellationToggle');
       const canvas = document.getElementById('constellationCanvas');
       const ctx = canvas.getContext('2d');
@@ -172,27 +174,57 @@
         canvas.height = Math.max(1, Math.floor(rect.height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
-      function generatePoints(n = 28) {
+      function generatePoints(n = 32) {
         const rect = canvas.getBoundingClientRect();
         const pts = [];
-        for (let i = 0; i < n; i++) pts.push({ x: Math.random() * rect.width, y: Math.random() * rect.height });
+        for (let i = 0; i < n; i++) {
+          const speed = 8 + Math.random() * 18; // px/sec
+          const angle = Math.random() * Math.PI * 2;
+          pts.push({
+            x: Math.random() * rect.width,
+            y: Math.random() * rect.height,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed
+          });
+        }
         return pts;
       }
       let activeConstellation = localStorage.getItem('constellation') === 'on';
       let points = [];
-      function drawConstellation() {
+      let rafId = null;
+      let lastT = 0;
+      function drawConstellation(t = 0) {
         if (!activeConstellation) return;
+        const rect = canvas.getBoundingClientRect();
+        const w = rect.width, h = rect.height;
+        // Update
+        const dt = lastT ? Math.min(0.05, (t - lastT) / 1000) : 0;
+        lastT = t;
+        if (dt) {
+          for (const p of points) {
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            if (p.x < 0) { p.x = 0; p.vx *= -1; }
+            if (p.x > w) { p.x = w; p.vx *= -1; }
+            if (p.y < 0) { p.y = 0; p.vy *= -1; }
+            if (p.y > h) { p.y = h; p.vy *= -1; }
+          }
+        }
+
+        // Draw
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgba(220, 225, 255, 0.28)';
-        const threshold = 140;
+        ctx.lineWidth = 1.1;
+        const threshold = 200;
         for (let i = 0; i < points.length; i++) {
           for (let j = i + 1; j < points.length; j++) {
             const dx = points[i].x - points[j].x;
             const dy = points[i].y - points[j].y;
             const d = Math.hypot(dx, dy);
             if (d < threshold) {
-              ctx.globalAlpha = 1 - d / threshold;
+              const a = 0.65 * (1 - d / threshold);
+              const tw = 0.85 + 0.15 * Math.sin((points[i].x + points[j].y + t * 0.002));
+              ctx.globalAlpha = Math.max(0.1, a * tw);
+              ctx.strokeStyle = 'rgba(220, 230, 255, 0.9)';
               ctx.beginPath();
               ctx.moveTo(points[i].x, points[i].y);
               ctx.lineTo(points[j].x, points[j].y);
@@ -201,6 +233,17 @@
           }
         }
         ctx.globalAlpha = 1;
+
+        // Draw points (nodes)
+        ctx.fillStyle = 'rgba(225, 235, 255, 0.75)';
+        for (const p of points) {
+          const r = 1 + (Math.sin((p.x + p.y + t * 0.004)) + 1) * 0.6; // 1..2.2px
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        if (!prefersReducedMotion) rafId = requestAnimationFrame(drawConstellation);
       }
       function setConstellation(on) {
         activeConstellation = on;
@@ -210,20 +253,22 @@
         if (on) {
           sizeCanvas();
           points = generatePoints();
+          lastT = 0;
           drawConstellation();
         } else {
+          if (rafId) cancelAnimationFrame(rafId);
+          rafId = null;
           ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
       }
       setConstellation(activeConstellation);
-      window.addEventListener('resize', () => { if (activeConstellation) { sizeCanvas(); points = generatePoints(); drawConstellation(); } });
+      window.addEventListener('resize', () => { if (activeConstellation) { sizeCanvas(); points = generatePoints(points.length); } });
       constellationBtn?.addEventListener('click', () => setConstellation(!activeConstellation));
 
       // Mouse parallax: subtle star/card depth
       const rootStyle = document.documentElement.style;
       const maxStar = 6, maxCard = 3; // px
-      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!reduceMotion) window.addEventListener('mousemove', (e) => {
+      if (!prefersReducedMotion) window.addEventListener('mousemove', (e) => {
         const w = window.innerWidth, h = window.innerHeight;
         const x = (e.clientX / w) * 2 - 1; // -1..1
         const y = (e.clientY / h) * 2 - 1;

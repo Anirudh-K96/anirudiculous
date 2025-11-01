@@ -527,3 +527,10 @@ img, svg {
 
 .constellation-toggle:hover, .constellation-toggle:focus-visible { transform: translateY(-1px); }
 .icon-constellation { width: 20px; height: 20px; }
+
+.constellation-toggle[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--text-primary);
+    border-color: rgba(127, 90, 240, 0.75);
+    box-shadow: 0 8px 22px rgba(127, 90, 240, 0.4);
+}
