@@ -183,8 +183,10 @@
       const constellationBtn = document.getElementById('constellationToggle');
       const canvas = document.getElementById('constellationCanvas');
       const ctx = canvas.getContext('2d');
+      const isSmallScreen = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
       function sizeCanvas() {
-        const dpr = window.devicePixelRatio || 1;
+        const pointerFine = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+        const dpr = pointerFine && !isSmallScreen ? (window.devicePixelRatio || 1) : 1; // cap DPR on mobile
         const rect = canvas.getBoundingClientRect();
         canvas.width = Math.max(1, Math.floor(rect.width * dpr));
         canvas.height = Math.max(1, Math.floor(rect.height * dpr));
@@ -193,13 +195,15 @@
       function generatePoints(n = 48) {
         const rect = canvas.getBoundingClientRect();
         const area = Math.max(1, rect.width * rect.height);
-        // Scale points by area to keep density consistent and lighter on mobile
-        const target = Math.max(24, Math.min(72, Math.round(area / 18000)));
+        // Scale points by area; use lower min on small screens
+        const baseMin = isSmallScreen ? 12 : 24;
+        const baseMax = isSmallScreen ? 48 : 72;
+        const target = Math.max(baseMin, Math.min(baseMax, Math.round(area / 18000)));
         n = target;
         const pts = [];
         for (let i = 0; i < n; i++) {
           const base = 12 + Math.random() * 22; // px/sec
-          const scale = (Math.min(rect.width, rect.height) < 720) ? 0.8 : 1; // a bit slower on small screens
+          const scale = isSmallScreen ? 0.7 : 1; // slower on small screens
           const speed = base * scale;
           const angle = Math.random() * Math.PI * 2;
           pts.push({
@@ -221,6 +225,9 @@
         const rect = canvas.getBoundingClientRect();
         const w = rect.width, h = rect.height;
         // Update
+        // Frame rate cap for mobile (20-30 fps)
+        const minInterval = isSmallScreen ? 50 : 33; // ms
+        if (lastT && (t - lastT) < minInterval) { rafId = requestAnimationFrame(drawConstellation); return; }
         const dt = lastT ? Math.min(0.05, (t - lastT) / 1000) : 0;
         lastT = t;
         if (dt) {
@@ -236,23 +243,25 @@
 
         // Draw
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // Brighter, thicker connections
-        ctx.lineWidth = 1.4;
-        const threshold = 260;
+        // Connections
+        const threshold = isSmallScreen ? 180 : 260;
+        ctx.lineWidth = isSmallScreen ? 1.0 : 1.4;
         const prevComp = ctx.globalCompositeOperation;
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = 'rgba(180, 200, 255, 0.6)';
+        if (!isSmallScreen) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = 'rgba(180, 200, 255, 0.6)';
+        }
         for (let i = 0; i < points.length; i++) {
           for (let j = i + 1; j < points.length; j++) {
             const dx = points[i].x - points[j].x;
             const dy = points[i].y - points[j].y;
             const d = Math.hypot(dx, dy);
             if (d < threshold) {
-              const a = 0.8 * (1 - d / threshold);
+              const a = (isSmallScreen ? 0.55 : 0.8) * (1 - d / threshold);
               const tw = 0.85 + 0.25 * Math.sin((points[i].x + points[j].y + t * 0.002));
-              ctx.globalAlpha = Math.max(0.1, a * tw);
-              ctx.strokeStyle = 'rgba(220, 230, 255, 0.9)';
+              ctx.globalAlpha = Math.max(0.08, a * tw);
+              ctx.strokeStyle = isSmallScreen ? 'rgba(220, 230, 255, 0.6)' : 'rgba(220, 230, 255, 0.9)';
               ctx.beginPath();
               ctx.moveTo(points[i].x, points[i].y);
               ctx.lineTo(points[j].x, points[j].y);
@@ -261,20 +270,18 @@
           }
         }
         ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
-        ctx.globalCompositeOperation = prevComp;
+        if (!isSmallScreen) { ctx.shadowBlur = 0; ctx.globalCompositeOperation = prevComp; }
 
         // Draw points (nodes)
-        ctx.fillStyle = 'rgba(225, 235, 255, 0.9)';
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = 'rgba(200, 220, 255, 0.7)';
+        ctx.fillStyle = isSmallScreen ? 'rgba(225, 235, 255, 0.8)' : 'rgba(225, 235, 255, 0.9)';
+        if (!isSmallScreen) { ctx.shadowBlur = 6; ctx.shadowColor = 'rgba(200, 220, 255, 0.7)'; }
         for (const p of points) {
-          const r = 1.2 + (Math.sin((p.x + p.y + t * 0.004)) + 1) * 0.7; // ~1.2..2.6px
+          const r = (isSmallScreen ? 1.0 : 1.2) + (Math.sin((p.x + p.y + t * 0.004)) + 1) * (isSmallScreen ? 0.5 : 0.7);
           ctx.beginPath();
           ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
           ctx.fill();
         }
-        ctx.shadowBlur = 0;
+        if (!isSmallScreen) ctx.shadowBlur = 0;
 
         if (!prefersReducedMotion) rafId = requestAnimationFrame(drawConstellation);
       }

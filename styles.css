@@ -364,8 +364,10 @@ img, svg {
     /* Place toggles near bottom on mobile for reachability */
     .theme-toggle { top: auto; bottom: calc(16px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right)); }
     .constellation-toggle { top: auto; bottom: calc(72px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right)); }
-    /* Reduce shooting stars count for perf on small screens */
-    .shooting-stars span:nth-child(n+9) { display: none; }
+    /* Stronger perf tweaks on small screens */
+    .shooting-stars { display: none; }
+    .banner::before { animation: none; opacity: 0.35; }
+    .card { backdrop-filter: none; background: linear-gradient(180deg, rgba(16, 17, 46, 0.98) 0%, rgba(10, 11, 32, 0.98) 100%); }
 }
 
 /* Modal */
