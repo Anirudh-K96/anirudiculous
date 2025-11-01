@@ -361,6 +361,11 @@ img, svg {
     .actions { justify-content: center; }
     .section { padding: 1.25rem; }
     .verified-list li { flex-direction: column; align-items: flex-start; }
+    /* Place toggles near bottom on mobile for reachability */
+    .theme-toggle { top: auto; bottom: calc(16px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right)); }
+    .constellation-toggle { top: auto; bottom: calc(72px + env(safe-area-inset-bottom)); right: calc(16px + env(safe-area-inset-right)); }
+    /* Reduce shooting stars count for perf on small screens */
+    .shooting-stars span:nth-child(n+9) { display: none; }
 }
 
 /* Modal */
@@ -486,8 +491,8 @@ img, svg {
 /* Theme toggle button */
 .theme-toggle {
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: calc(16px + env(safe-area-inset-top));
+    right: calc(16px + env(safe-area-inset-right));
     z-index: 10;
     display: inline-flex;
     align-items: center;
@@ -512,8 +517,8 @@ img, svg {
 /* Constellation toggle button */
 .constellation-toggle {
     position: fixed;
-    top: 16px;
-    right: 68px;
+    top: calc(16px + env(safe-area-inset-top));
+    right: calc(68px + env(safe-area-inset-right));
     z-index: 10;
     display: inline-flex;
     align-items: center;
