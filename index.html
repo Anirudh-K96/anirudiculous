@@ -128,11 +128,13 @@
       // Theme setup
       const themeToggle = document.getElementById('themeToggle');
       const savedTheme = localStorage.getItem('theme');
-      const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-      const initialTheme = savedTheme ? savedTheme : (prefersLight ? 'light' : 'dark');
+      const initialTheme = savedTheme ? savedTheme : 'dark';
       if (initialTheme === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
         themeToggle?.setAttribute('aria-pressed', 'true');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        themeToggle?.setAttribute('aria-pressed', 'false');
       }
 
       themeToggle?.addEventListener('click', () => {
