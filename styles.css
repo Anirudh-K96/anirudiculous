@@ -3,6 +3,9 @@
     --card-bg: rgba(16, 17, 46, 0.88);
     --accent: #7f5af0;
     --accent-soft: rgba(127, 90, 240, 0.18);
+    --brand-x: #1D9BF0;
+    --brand-linkedin: #0A66C2;
+    --brand-github: #6e7681;
     --text-primary: #f8f9ff;
     --text-muted: #a4a8c1;
     --border-color: rgba(255, 255, 255, 0.08);
@@ -214,14 +217,18 @@ img, svg {
     border-radius: calc(var(--radius-md) - 6px);
     padding: 0.8rem 1rem;
     border: 1px solid rgba(127, 90, 240, 0.2);
+    border-left: 3px solid var(--platform-color, var(--accent));
 }
 
 .verified-list .label {
     font-weight: 600;
-    color: var(--accent);
+    color: var(--text-primary);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
 }
 
 .verified-list a {
@@ -251,6 +258,23 @@ img, svg {
     font-weight: 600;
     font-size: 0.85rem;
 }
+
+/* Brand accents for verified list */
+.verified-list .brand { width: 16px; height: 16px; color: var(--platform-color, var(--accent)); }
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--platform-color, var(--accent));
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.2), 0 6px 14px rgba(0,0,0,0.25);
+}
+
+.platform-x { --platform-color: var(--brand-x); }
+.platform-linkedin { --platform-color: var(--brand-linkedin); }
+.platform-github { --platform-color: var(--brand-github); }
 
 @keyframes starfield-drift {
     0% { background-position: 0 0, 0 0, 0 0; }
@@ -365,4 +389,3 @@ img, svg {
 }
 
 .copy-status { color: var(--text-muted); font-weight: 600; }
-
