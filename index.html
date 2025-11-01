@@ -16,6 +16,8 @@
     <div class="shooting-stars" aria-hidden="true">
       <span></span><span></span><span></span><span></span>
       <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
     </div>
   </div>
   <button class="constellation-toggle" id="constellationToggle" aria-label="Toggle constellation overlay" title="Toggle constellation" aria-pressed="false">
@@ -174,11 +176,11 @@
         canvas.height = Math.max(1, Math.floor(rect.height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
-      function generatePoints(n = 32) {
+      function generatePoints(n = 48) {
         const rect = canvas.getBoundingClientRect();
         const pts = [];
         for (let i = 0; i < n; i++) {
-          const speed = 8 + Math.random() * 18; // px/sec
+          const speed = 12 + Math.random() * 22; // px/sec (slightly faster)
           const angle = Math.random() * Math.PI * 2;
           pts.push({
             x: Math.random() * rect.width,
@@ -189,7 +191,8 @@
         }
         return pts;
       }
-      let activeConstellation = localStorage.getItem('constellation') === 'on';
+      const storedConstellation = localStorage.getItem('constellation');
+      let activeConstellation = storedConstellation ? (storedConstellation === 'on') : true; // default ON
       let points = [];
       let rafId = null;
       let lastT = 0;
@@ -213,16 +216,21 @@
 
         // Draw
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.lineWidth = 1.1;
-        const threshold = 200;
+        // Brighter, thicker connections
+        ctx.lineWidth = 1.4;
+        const threshold = 260;
+        const prevComp = ctx.globalCompositeOperation;
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = 'rgba(180, 200, 255, 0.6)';
         for (let i = 0; i < points.length; i++) {
           for (let j = i + 1; j < points.length; j++) {
             const dx = points[i].x - points[j].x;
             const dy = points[i].y - points[j].y;
             const d = Math.hypot(dx, dy);
             if (d < threshold) {
-              const a = 0.65 * (1 - d / threshold);
-              const tw = 0.85 + 0.15 * Math.sin((points[i].x + points[j].y + t * 0.002));
+              const a = 0.8 * (1 - d / threshold);
+              const tw = 0.85 + 0.25 * Math.sin((points[i].x + points[j].y + t * 0.002));
               ctx.globalAlpha = Math.max(0.1, a * tw);
               ctx.strokeStyle = 'rgba(220, 230, 255, 0.9)';
               ctx.beginPath();
@@ -233,15 +241,20 @@
           }
         }
         ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+        ctx.globalCompositeOperation = prevComp;
 
         // Draw points (nodes)
-        ctx.fillStyle = 'rgba(225, 235, 255, 0.75)';
+        ctx.fillStyle = 'rgba(225, 235, 255, 0.9)';
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = 'rgba(200, 220, 255, 0.7)';
         for (const p of points) {
-          const r = 1 + (Math.sin((p.x + p.y + t * 0.004)) + 1) * 0.6; // 1..2.2px
+          const r = 1.2 + (Math.sin((p.x + p.y + t * 0.004)) + 1) * 0.7; // ~1.2..2.6px
           ctx.beginPath();
           ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
           ctx.fill();
         }
+        ctx.shadowBlur = 0;
 
         if (!prefersReducedMotion) rafId = requestAnimationFrame(drawConstellation);
       }
@@ -250,6 +263,8 @@
         localStorage.setItem('constellation', on ? 'on' : 'off');
         constellationBtn?.setAttribute('aria-pressed', on ? 'true' : 'false');
         canvas.style.opacity = on ? '1' : '0';
+        // Toggle root class to control other motion (starfield/shooting stars/parallax)
+        document.documentElement.classList.toggle('constellation-on', on);
         if (on) {
           sizeCanvas();
           points = generatePoints();
@@ -267,16 +282,32 @@
 
       // Mouse parallax: subtle star/card depth
       const rootStyle = document.documentElement.style;
-      const maxStar = 6, maxCard = 3; // px
-      if (!prefersReducedMotion) window.addEventListener('mousemove', (e) => {
-        const w = window.innerWidth, h = window.innerHeight;
-        const x = (e.clientX / w) * 2 - 1; // -1..1
-        const y = (e.clientY / h) * 2 - 1;
-        rootStyle.setProperty('--star-parallax-x', `${-x * maxStar}px`);
-        rootStyle.setProperty('--star-parallax-y', `${-y * maxStar}px`);
-        rootStyle.setProperty('--card-parallax-x', `${x * maxCard}px`);
-        rootStyle.setProperty('--card-parallax-y', `${y * maxCard}px`);
-      }, { passive: true });
+      const maxStar = 10, maxCard = 5; // px (slightly stronger parallax)
+      let parallaxHandler = null;
+      function enableParallax(on) {
+        if (prefersReducedMotion) return; // always off if reduced motion
+        if (on && !parallaxHandler) {
+          parallaxHandler = (e) => {
+            const w = window.innerWidth, h = window.innerHeight;
+            const x = (e.clientX / w) * 2 - 1; // -1..1
+            const y = (e.clientY / h) * 2 - 1;
+            rootStyle.setProperty('--star-parallax-x', `${-x * maxStar}px`);
+            rootStyle.setProperty('--star-parallax-y', `${-y * maxStar}px`);
+            rootStyle.setProperty('--card-parallax-x', `${x * maxCard}px`);
+            rootStyle.setProperty('--card-parallax-y', `${y * maxCard}px`);
+          };
+          window.addEventListener('mousemove', parallaxHandler, { passive: true });
+        } else if (!on && parallaxHandler) {
+          window.removeEventListener('mousemove', parallaxHandler, { passive: true });
+          parallaxHandler = null;
+          rootStyle.setProperty('--star-parallax-x', `0px`);
+          rootStyle.setProperty('--star-parallax-y', `0px`);
+          rootStyle.setProperty('--card-parallax-x', `0px`);
+          rootStyle.setProperty('--card-parallax-y', `0px`);
+        }
+      }
+      // Sync parallax with constellation state
+      enableParallax(activeConstellation);
 
       const contactBtn = document.getElementById('contactBtn');
       const modal = document.getElementById('contactModal');
