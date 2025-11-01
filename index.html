@@ -138,6 +138,14 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Randomize banner background image each load
+      (function() {
+        const banner = document.querySelector('.banner');
+        if (!banner) return;
+        const choices = ['assets/banner.jpg', 'assets/banner2.jpg'];
+        const pick = choices[Math.floor(Math.random() * choices.length)];
+        banner.style.background = `url('${pick}') center/cover no-repeat`;
+      })();
       // Global motion preference
       const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       // Theme setup
