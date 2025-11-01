@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<<<<<<< ours
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Anirudh Kosgi | Personal Card</title>
@@ -77,6 +76,7 @@
       </div>
     </section>
   </main>
+
   <div class="modal" id="contactModal" aria-hidden="true" role="dialog" aria-labelledby="contactTitle">
     <div class="modal-dialog" role="document" tabindex="-1">
       <button class="modal-close" aria-label="Close" data-close>&times;</button>
@@ -84,123 +84,63 @@
       <p class="contact-email">
         <a href="mailto:anirudh.kosgi@gmail.com">anirudh.kosgi@gmail.com</a>
         <button class="copy-btn" id="copyEmail" type="button">Copy</button>
-        <span class="copy-status" aria-live="polite" id="copyStatus" hidden>Copied!</span>
+        <span class="copy-status" id="copyStatus" hidden>Copied!</span>
       </p>
     </div>
-    <button class="modal-backdrop" data-close aria-label="Close dialog"></button>
   </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const openBtn = document.getElementById('contactBtn');
+      const contactBtn = document.getElementById('contactBtn');
       const modal = document.getElementById('contactModal');
+      const closeBtn = modal.querySelector('[data-close]');
       const dialog = modal.querySelector('.modal-dialog');
-      const closeEls = modal.querySelectorAll('[data-close]');
       const copyBtn = document.getElementById('copyEmail');
       const copyStatus = document.getElementById('copyStatus');
-      const email = 'anirudh.kosgi@gmail.com';
 
-      function openModal(e) {
-        if (e) e.preventDefault();
+      function openModal() {
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
-        setTimeout(() => dialog.focus(), 0);
+        dialog.focus();
       }
 
       function closeModal() {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
-        if (openBtn) openBtn.focus();
       }
 
-      openBtn && openBtn.addEventListener('click', openModal);
-      closeEls.forEach(el => el.addEventListener('click', closeModal));
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+      contactBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal();
       });
 
-      if (copyBtn) {
-        copyBtn.addEventListener('click', async () => {
-          try {
+      closeBtn?.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+      });
+
+      copyBtn?.addEventListener('click', async () => {
+        const email = 'anirudh.kosgi@gmail.com';
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(email);
-            copyStatus.hidden = false;
-            copyStatus.textContent = 'Copied!';
-            setTimeout(() => (copyStatus.hidden = true), 1500);
-          } catch (_) {
+          } else {
             const ta = document.createElement('textarea');
             ta.value = email;
             document.body.appendChild(ta);
             ta.select();
-            try {
-              document.execCommand('copy');
-              copyStatus.hidden = false;
-              copyStatus.textContent = 'Copied!';
-              setTimeout(() => (copyStatus.hidden = true), 1500);
-            } finally {
-              document.body.removeChild(ta);
-            }
+            document.execCommand('copy');
+            document.body.removeChild(ta);
           }
-        });
-      }
+          copyStatus.hidden = false;
+          copyStatus.textContent = 'Copied!';
+          setTimeout(() => (copyStatus.hidden = true), 1500);
+        } catch {}
+      });
     });
   </script>
-=======
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anirudh Kosgi | Personal Card</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="banner"></div>
-    <main class="card">
-        <section class="profile">
-            <img class="avatar" src="assets/profile.jpg" alt="Portrait of Anirudh Kosgi">
-            <div class="identity">
-                <h1>Anirudh Kosgi</h1>
-                <p class="subtitle">Electrical Engineering, Dayananda Sagar College of Engineering, Bengaluru, India</p>
-                <p class="bio">“If it’s not broken, I’ll find a way to improve it until it is. Arch btw.”</p>
-                <ul class="socials">
-                    <li><a href="https://x.com/An1rudh_xe" target="_blank" rel="noopener">X</a></li>
-                    <li><a href="https://linkedin.com/in/anirudh-kosgi" target="_blank" rel="noopener">LinkedIn</a></li>
-                    <li><a href="https://github.com/Anirudh-K96" target="_blank" rel="noopener">GitHub</a></li>
-                </ul>
-                <div class="actions">
-                    <a class="btn" href="#share">Share</a>
-                    <a class="btn secondary" href="#contact">Contact</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="section" id="verified">
-            <h2>Verified Accounts</h2>
-            <ul class="verified-list">
-                <li>
-                    <span class="label">X</span>
-                    <a href="https://x.com/An1rudh_xe" target="_blank" rel="noopener">x.com/An1rudh_xe</a>
-                </li>
-                <li>
-                    <span class="label">LinkedIn</span>
-                    <a href="https://linkedin.com/in/anirudh-kosgi" target="_blank" rel="noopener">linkedin.com/in/anirudh-kosgi</a>
-                </li>
-                <li>
-                    <span class="label">GitHub</span>
-                    <a href="https://github.com/Anirudh-K96" target="_blank" rel="noopener">github.com/Anirudh-K96</a>
-                </li>
-            </ul>
-        </section>
-
-        <section class="section interests" id="interests">
-            <h2>Interests</h2>
-            <div class="interest-tags">
-                <span>linux</span>
-                <span>programming</span>
-                <span>web development</span>
-                <span>gaming</span>
-            </div>
-        </section>
-    </main>
->>>>>>> theirs
 </body>
 </html>
