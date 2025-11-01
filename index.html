@@ -138,11 +138,17 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Randomize banner background image each load
+      // Randomize banner background image each load (mobile-friendly)
       (function() {
         const banner = document.querySelector('.banner');
         if (!banner) return;
-        const choices = ['assets/banner.jpg', 'assets/banner2.jpg'];
+        const choices = [
+          'assets/banner.jpg',
+          'assets/banner2.jpg',
+          'assets/banner3.jpg',
+          'assets/banner4.jpg',
+          'assets/banner5.jpg'
+        ];
         const pick = choices[Math.floor(Math.random() * choices.length)];
         banner.style.background = `url('${pick}') center/cover no-repeat`;
       })();
