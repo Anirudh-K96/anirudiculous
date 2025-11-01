@@ -11,7 +11,18 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="banner"></div>
+  <div class="banner">
+    <canvas id="constellationCanvas" class="constellation-canvas" aria-hidden="true"></canvas>
+    <div class="shooting-stars" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <button class="constellation-toggle" id="constellationToggle" aria-label="Toggle constellation overlay" title="Toggle constellation" aria-pressed="false">
+    <svg class="icon-constellation" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M5 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm7-6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm7 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM6.7 12.9l3.8-2.3m2.8-.9l3.7 5.1" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle theme" aria-pressed="false">
     <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zm10.48 0l1.79-1.79 1.79 1.79-1.79 1.79-1.79-1.79zM12 4V1h0a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0zm0 19a1 1 0 0 1-1-1v-2a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1zM4 13H2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zm18 0h-2a1 1 0 1 1 0-2h2a1 1 0 1 1 0 2zM6.76 19.16l-1.8 1.79-1.79-1.79 1.79-1.79 1.8 1.79zm12.1 0l-1.79 1.79-1.79-1.79 1.79-1.79 1.79 1.79zM12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/></svg>
     <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path fill="currentColor" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -149,6 +160,78 @@
           themeToggle.setAttribute('aria-pressed', 'true');
         }
       });
+
+      // Constellation overlay toggle + drawing
+      const constellationBtn = document.getElementById('constellationToggle');
+      const canvas = document.getElementById('constellationCanvas');
+      const ctx = canvas.getContext('2d');
+      function sizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      function generatePoints(n = 28) {
+        const rect = canvas.getBoundingClientRect();
+        const pts = [];
+        for (let i = 0; i < n; i++) pts.push({ x: Math.random() * rect.width, y: Math.random() * rect.height });
+        return pts;
+      }
+      let activeConstellation = localStorage.getItem('constellation') === 'on';
+      let points = [];
+      function drawConstellation() {
+        if (!activeConstellation) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(220, 225, 255, 0.28)';
+        const threshold = 140;
+        for (let i = 0; i < points.length; i++) {
+          for (let j = i + 1; j < points.length; j++) {
+            const dx = points[i].x - points[j].x;
+            const dy = points[i].y - points[j].y;
+            const d = Math.hypot(dx, dy);
+            if (d < threshold) {
+              ctx.globalAlpha = 1 - d / threshold;
+              ctx.beginPath();
+              ctx.moveTo(points[i].x, points[i].y);
+              ctx.lineTo(points[j].x, points[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+      function setConstellation(on) {
+        activeConstellation = on;
+        localStorage.setItem('constellation', on ? 'on' : 'off');
+        constellationBtn?.setAttribute('aria-pressed', on ? 'true' : 'false');
+        canvas.style.opacity = on ? '1' : '0';
+        if (on) {
+          sizeCanvas();
+          points = generatePoints();
+          drawConstellation();
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      setConstellation(activeConstellation);
+      window.addEventListener('resize', () => { if (activeConstellation) { sizeCanvas(); points = generatePoints(); drawConstellation(); } });
+      constellationBtn?.addEventListener('click', () => setConstellation(!activeConstellation));
+
+      // Mouse parallax: subtle star/card depth
+      const rootStyle = document.documentElement.style;
+      const maxStar = 6, maxCard = 3; // px
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduceMotion) window.addEventListener('mousemove', (e) => {
+        const w = window.innerWidth, h = window.innerHeight;
+        const x = (e.clientX / w) * 2 - 1; // -1..1
+        const y = (e.clientY / h) * 2 - 1;
+        rootStyle.setProperty('--star-parallax-x', `${-x * maxStar}px`);
+        rootStyle.setProperty('--star-parallax-y', `${-y * maxStar}px`);
+        rootStyle.setProperty('--card-parallax-x', `${x * maxCard}px`);
+        rootStyle.setProperty('--card-parallax-y', `${y * maxCard}px`);
+      }, { passive: true });
 
       const contactBtn = document.getElementById('contactBtn');
       const modal = document.getElementById('contactModal');
