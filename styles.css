@@ -258,3 +258,109 @@ body {
         align-items: flex-start;
     }
 }
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(3, 3, 12, 0.55);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition), visibility var(--transition);
+    z-index: 1000;
+}
+
+.modal.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    border: none;
+}
+
+.modal-dialog {
+    position: relative;
+    width: min(440px, 92vw);
+    background: rgba(16, 17, 46, 0.98);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    padding: 1.25rem 1.25rem 1rem;
+    outline: none;
+}
+
+.modal h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.75rem;
+}
+
+.contact-email {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.contact-email a {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.contact-email a:hover,
+.contact-email a:focus-visible {
+    text-decoration: underline;
+}
+
+.copy-btn {
+    cursor: pointer;
+    border: 1px solid rgba(127, 90, 240, 0.65);
+    background: var(--accent);
+    color: var(--text-primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.copy-btn:hover,
+.copy-btn:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(127, 90, 240, 0.35);
+}
+
+.modal-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(12, 13, 34, 0.8);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.modal-close:hover,
+.modal-close:focus-visible {
+    background: var(--accent);
+    border-color: rgba(127, 90, 240, 0.8);
+}
+
+.copy-status {
+    color: var(--text-muted);
+    font-weight: 600;
+}

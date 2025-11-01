@@ -42,7 +42,7 @@
           </li>
         </ul>
         <div class="actions">
-          <a class="btn secondary" href="#contact">Contact</a>
+          <a class="btn secondary" href="#contact" id="contactBtn">Contact</a>
         </div>
       </div>
     </section>
@@ -75,5 +75,71 @@
       </div>
     </section>
   </main>
+  <div class="modal" id="contactModal" aria-hidden="true" role="dialog" aria-labelledby="contactTitle">
+    <div class="modal-dialog" role="document" tabindex="-1">
+      <button class="modal-close" aria-label="Close" data-close>&times;</button>
+      <h3 id="contactTitle">Contact</h3>
+      <p class="contact-email">
+        <a href="mailto:anirudh.kosgi@gmail.com">anirudh.kosgi@gmail.com</a>
+        <button class="copy-btn" id="copyEmail" type="button">Copy</button>
+        <span class="copy-status" aria-live="polite" id="copyStatus" hidden>Copied!</span>
+      </p>
+    </div>
+    <button class="modal-backdrop" data-close aria-label="Close dialog"></button>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const openBtn = document.getElementById('contactBtn');
+      const modal = document.getElementById('contactModal');
+      const dialog = modal.querySelector('.modal-dialog');
+      const closeEls = modal.querySelectorAll('[data-close]');
+      const copyBtn = document.getElementById('copyEmail');
+      const copyStatus = document.getElementById('copyStatus');
+      const email = 'anirudh.kosgi@gmail.com';
+
+      function openModal(e) {
+        if (e) e.preventDefault();
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        setTimeout(() => dialog.focus(), 0);
+      }
+
+      function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        if (openBtn) openBtn.focus();
+      }
+
+      openBtn && openBtn.addEventListener('click', openModal);
+      closeEls.forEach(el => el.addEventListener('click', closeModal));
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+      });
+
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(email);
+            copyStatus.hidden = false;
+            copyStatus.textContent = 'Copied!';
+            setTimeout(() => (copyStatus.hidden = true), 1500);
+          } catch (_) {
+            const ta = document.createElement('textarea');
+            ta.value = email;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+              document.execCommand('copy');
+              copyStatus.hidden = false;
+              copyStatus.textContent = 'Copied!';
+              setTimeout(() => (copyStatus.hidden = true), 1500);
+            } finally {
+              document.body.removeChild(ta);
+            }
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
