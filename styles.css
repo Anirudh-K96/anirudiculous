@@ -100,16 +100,21 @@ body {
     margin-top: 1.5rem;
 }
 
+
 .socials a {
     text-decoration: none;
     color: var(--text-primary);
-    font-weight: 600;
-    padding: 0.35rem 0.8rem;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
     border-radius: 999px;
     background: var(--accent-soft);
     border: 1px solid rgba(127, 90, 240, 0.5);
-    transition: transform var(--transition), background var(--transition);
+    transition: transform var(--transition), background var(--transition), color var(--transition);
 }
+
+.socials svg { width: 20px; height: 20px; }
 
 .socials a:hover,
 .socials a:focus-visible {
